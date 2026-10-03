@@ -29,8 +29,18 @@ const page = await ctx.newPage();
 await page.route("**/qrcode.min.js", r => r.fulfill({ contentType: "text/javascript", body: fs.readFileSync(`${libs}/qrcode-generator/qrcode.js`) }));
 await page.route("**/JsBarcode.all.min.js", r => r.fulfill({ contentType: "text/javascript", body: fs.readFileSync(`${libs}/jsbarcode/dist/JsBarcode.all.min.js`) }));
 await page.route("**/jspdf.umd.min.js", r => r.fulfill({ contentType: "text/javascript", body: "window.jspdf={};" }));
-await page.goto("file://" + path.resolve(appHtml));
+// optional: serve the Google Fonts CSS and files from a local folder (FONTS_DIR) so Khmer/Cinzel render offline
+if (process.env.FONTS_DIR) {
+  const fd = process.env.FONTS_DIR;
+  await page.route("https://fonts.googleapis.com/**", r => r.fulfill({ contentType: "text/css", body: fs.readFileSync(`${fd}/fonts.css`) }));
+  await page.route("https://fonts.gstatic.com/**", r => {
+    const f = `${fd}/${r.request().url().split("/").pop()}`;
+    fs.existsSync(f) ? r.fulfill({ contentType: "font/woff2", body: fs.readFileSync(f), headers: { "access-control-allow-origin": "*" } }) : r.abort();
+  });
+}
+await page.goto("file://" + path.resolve(appHtml), { waitUntil: "domcontentloaded", timeout: 60000 });
 await page.waitForFunction(() => document.getElementById("cvFront")?.width > 0, null, { timeout: 30000 });
+await page.evaluate(() => Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 15000))]));
 await page.waitForTimeout(1500);
 
 fs.mkdirSync(outDir, { recursive: true });
@@ -50,10 +60,15 @@ const result = await page.evaluate(async ({ roster, portraits, BRANCH, BLOOD, SC
     c.save();
     c.globalCompositeOperation = "source-atop";   // only paint on the card itself
     c.textAlign = "center"; c.textBaseline = "middle";
-    c.font = `700 ${11 * S}px Cinzel, serif`; c.letterSpacing = (1.2 * S) + "px";
-    for (const y of [22, 46, 70]) {
+    c.font = `700 ${8.4 * S}px Cinzel, serif`; c.letterSpacing = (.8 * S) + "px";
+    for (const y of [20, 44, 68]) {
       c.save(); c.translate(27 * S, y * S); c.rotate(-0.55);
       c.fillStyle = SPEC_RED + ".34)"; c.fillText("SPECIMEN", 0, 0); c.restore();
+    }
+    if (back) {   // the QR carries only a specimen string, so do not caption it as a verification code
+      c.fillStyle = "#15244B"; c.fillRect(34.4 * S, 43.8 * S, 17.6 * S, 4.2 * S);
+      c.font = `700 ${1.15 * S}px "Barlow Semi Condensed", sans-serif`; c.letterSpacing = (.15 * S) + "px";
+      c.fillStyle = "#ff8a80"; c.fillText("SPECIMEN CODE ONLY", 42.8 * S, 46 * S);
     }
     c.font = `700 ${1.1 * S}px "Barlow Semi Condensed", sans-serif`; c.letterSpacing = (.25 * S) + "px";
     c.fillStyle = "#ff8a80"; c.fillText("DESIGN CONCEPT · NOT A VALID CREDENTIAL", 27 * S, 85.0 * S);
@@ -69,7 +84,7 @@ const result = await page.evaluate(async ({ roster, portraits, BRANCH, BLOOD, SC
       position: (o.sp || "").toUpperCase(), position_kh: "", unit: (o.u || "").toUpperCase(), unit_kh: "",
       branch: BRANCH[o.br] || "hc", phone: "", blood: BLOOD[i % BLOOD.length], dob: o.dob, nat: "CAMBODIAN",
       idno: "KH-SPEC-" + n, issue: "2026-10-03", expiry: "2031-10-02", lang: "bi", qrmode: "id",
-      pz: 1, px: 50, py: 8,
+      pz: 1, px: 50, py: 50,
     };
     photoImg = imgs[i % imgs.length];
     const f = document.createElement("canvas"), b = document.createElement("canvas");
