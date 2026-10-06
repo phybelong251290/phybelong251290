@@ -171,10 +171,10 @@ text(sd, (46, 100), T['sub'], 'Regular', 20, (80, 80, 80))
 sheet.paste(panel, (0, head_h))
 y = head_h + panel.height + 40
 
-# table: front values (v1 sheet; title line 1 removed: height 3.6 -> 1.9 by the back ratio 4.4/8.2,
-# title kept vertically centred so its top moves 18.0 -> 18.9) vs back values
-FR = [f"{N(30.0)} × {N(7.6)}", f"{N(8.6)} × {N(7.6)}", f"{N(12.2)} × {N(1.9)}", f"{N(9.2)} ({T['side']})",
-      f"CF→ {N(6.4)} / {N(2.8)}", 'HPS ↓ ' + N(15.2), 'HPS ↓ ' + N(18.9), N(15.0)]
+# table: front values (v1 sheet; title line 1 removed: height 3.6 -> 2.1 from the one-line title's aspect ratio (26.0 x 4.4),
+# title kept vertically centred so its top moves 18.0 -> 18.8) vs back values
+FR = [f"{N(30.0)} × {N(7.6)}", f"{N(8.6)} × {N(7.6)}", f"{N(12.2)} × {N(2.1)}", f"{N(9.2)} ({T['side']})",
+      f"CF→ {N(6.4)} / {N(2.8)}", 'HPS ↓ ' + N(15.2), 'HPS ↓ ' + N(18.8), N(15.0)]
 BK = [f"{N(TOT_W)} × {N(TOT_H)}", f"{N(EMB_W)} × {N(EMB_H)}", f"{N(TIT_W)} × {N(TIT_H)}", f"{N(GAP)} ({T['stacked']})",
       T['centred'], ('seam ↓ ' if LANG == 'en' else 'ថ្នេរ ↓ ') + N(TOP_CM),
       ('seam ↓ ' if LANG == 'en' else 'ថ្នេរ ↓ ') + N(TOP_CM + EMB_H + GAP), N(TOT_W / 2)]
