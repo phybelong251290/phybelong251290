@@ -123,11 +123,21 @@ WHITE, YEL, INK, ACC = (255, 255, 255), (255, 190, 40), (28, 28, 28), (255, 150,
 # ---------- back panel ----------
 img = Image.open(os.path.join(HERE, 'back_mockup.webp')).convert('RGB')
 line2 = img.crop((510, 858, 880, 928))                           # keep title line 2 (ទីចាត់ការបុគ្គលិក)
-strip = img.crop((405, 800, 505, 965))                           # plain fabric at the same height (matches the lighting gradient)
-flip = strip.transpose(Image.FLIP_LEFT_RIGHT)
-for i, x in enumerate(range(470, 920, 100)):                     # erase old title block + baked-in size label
-    img.paste(strip if i % 2 == 0 else flip, (x, 800))
+import numpy as np
+_a = np.asarray(img).astype(float)
+_L = _a[800:965, 452:468].mean(1)                                # fabric colour per row, left of the artwork
+_R = _a[800:965, 922:938].mean(1)                               # ... and right of it
+_noise = (_a[800:965, 405:505] - _a[800:965, 405:505].mean(1, keepdims=True)).std()
+_rng = np.random.default_rng(7)
+_T = _a[794:801, 470:920].mean(0)                               # fabric just above the erased block
+_B = _a[966:973, 470:920].mean(0)                                # ... and just below it
+_wx = np.linspace(0, 1, 450)[None, :, None]; _wy = np.linspace(0, 1, 165)[:, None, None]
+_fill = ((1 - _wx) * _L[:, None, :] + _wx * _R[:, None, :] + (1 - _wy) * _T[None, :, :] + _wy * _B[None, :, :]
+         - ((1 - _wx) * (1 - _wy) * _T[0] + _wx * (1 - _wy) * _T[-1] + (1 - _wx) * _wy * _B[0] + _wx * _wy * _B[-1])
+         + _rng.normal(0, _noise, (165, 450, 3)))
+img.paste(Image.fromarray(np.clip(_fill, 0, 255).astype('uint8')), (470, 800))   # erase old title block + baked-in size label
 img.paste(line2, (510, 806))                                     # line 2 moves up; gap to emblem stays 1.7
+img.save(os.path.join(HERE, 'back_mockup_edited.png'))           # clean edited photo for the A3 PDF
 d = ImageDraw.Draw(img)
 dashed(d, (CB_X, 380), (CB_X, 975), WHITE)
 text(d, (CB_X + 8, 376), T['cb'], 'Bold', 14, WHITE)
@@ -204,3 +214,6 @@ text(sd, (W / 2, H - 28), T['foot'], 'Regular', 17, (214, 200, 150), 'm')
 out = os.path.join(HERE, f'placement_back_{LANG}.png')
 sheet.save(out)
 print(out, sheet.size)
+
+import json
+json.dump(dict(T=T, FR=FR, BK=BK, G=dict(CB_X=CB_X, SEAM_Y=SEAM_Y, EMB=EMB, TIT=TIT, TOP_CM=TOP_CM, EMB_W=EMB_W, TIT_W=TIT_W, TOT_W=TOT_W, TOT_H=TOT_H, EMB_H=EMB_H, GAP=GAP, TIT_H=TIT_H)), open(os.path.join(HERE, f'data_{LANG}.json'), 'w'), ensure_ascii=False)
