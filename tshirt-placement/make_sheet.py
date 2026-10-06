@@ -31,11 +31,11 @@ TXT = dict(
             side='side by side', stacked='stacked', centred='centred on CB',
             hdr='HEAT PRESS', leg='HPS = high point of shoulder · CF = centre front · CB = centre back',
             notes=['1. Pre-press the shirt 5 s to remove moisture, then 2 s to smooth the surface.',
-                   '2. FRONT: mark CF on the transfer 15.0 from its left edge (inside the gap); align to the CF crease, top of emblem 15.2 below HPS.',
+                   '2. FRONT: one transfer on the wearer\'s right chest; its inner edge 5.7 from the CF crease, top 15.2 below HPS.',
                    '3. BACK: crease the centre back (CB); mark 13.0 from the transfer left edge; top of emblem 8.0 below the back collar seam.',
                    '4. Keep each transfer level (square to the crease). Tack with heat tape.',
                    '5. Press 160 °C, 15 s, medium-firm. Peel per film. Finish 10 s under parchment. Press the front first; cover it with parchment when pressing the back.',
-                   "Front: emblem on the wearer's RIGHT chest, title on the wearer's LEFT chest."],
+                   "Front: one transfer (emblem with the title below) on the wearer's RIGHT chest."],
             foot='All Right Reserved By Personnel Department, General Command, 2026'),
     kh=dict(title='អាវយឺតមនុស្សធំ ទំហំ M · ខាងក្រោយ', sub='ផ្ទាំងបោះពុម្ពតែមួយ ដាក់ចំកណ្ដាលខ្នង (CB) · ខ្នាតទាំងអស់គិតជា ស.ម',
             cb='កណ្ដាលខ្នង (CB)', seam='ថ្នេរកអាវខាងក្រោយ', overall='{w} × {h} ស.ម', tab='ខ្នាត និងទីតាំងដាក់ (ស.ម)',
@@ -46,11 +46,11 @@ TXT = dict(
             side='នៅក្បែរគ្នា', stacked='នៅលើក្រោម', centred='ចំកណ្ដាល CB',
             hdr='វិធីអ៊ុតផ្ទាំងរូប (Heat Press)', leg='HPS = ចំណុចខ្ពស់ស្មា · CF = បន្ទាត់កណ្ដាលខាងមុខ · CB = បន្ទាត់កណ្ដាលខាងក្រោយ',
             notes=['១. អ៊ុតអាវមុន ៥ វិនាទី បន្ទាប់មកអ៊ុត ២ វិនាទី ដើម្បីឲ្យផ្ទៃរាបស្មើ។',
-                   '២. ខាងមុខ៖ គូសសញ្ញា CF លើផ្ទាំងបោះពុម្ព ១៥.០ ពីគែមខាងឆ្វេង (ក្នុងចន្លោះទំនេរ)។ តម្រឹមនឹងស្នាម CF ហើយគែមលើនិមិត្តសញ្ញា ១៥.២ ពី HPS ចុះក្រោម។',
+                   '២. ខាងមុខ៖ ផ្ទាំងបោះពុម្ពតែមួយ នៅលើទ្រូងខាងស្ដាំរបស់អ្នកពាក់។ គែមខាងក្នុង ៥.៧ ពីស្នាម CF ហើយគែមលើ ១៥.២ ពី HPS ចុះក្រោម។',
                    '៣. ខាងក្រោយ៖ បង្កើតស្នាមកណ្ដាលខ្នង (CB)។ គូសសញ្ញា ១៣.០ ពីគែមឆ្វេងផ្ទាំងបោះពុម្ព។ គែមលើនិមិត្តសញ្ញា ៨.០ ពីថ្នេរកអាវខាងក្រោយចុះក្រោម។',
                    '៤. រក្សាផ្ទាំងបោះពុម្ពនីមួយៗឲ្យត្រង់ (កែងនឹងស្នាមកណ្ដាល)។ បិទដោយស្កុតធន់កម្ដៅ។',
                    '៥. អ៊ុត ១៦០ °C រយៈពេល ១៥ វិនាទី សម្ពាធមធ្យម-ខ្លាំង។ ហែកហ្វីលតាមប្រភេទហ្វីល។ អ៊ុតបញ្ចប់ ១០ វិនាទី ដោយគ្របក្រដាសការពារ។ អ៊ុតខាងមុខមុន ហើយគ្របវាដោយក្រដាសការពារ ពេលអ៊ុតខាងក្រោយ។',
-                   'ខាងមុខ៖ និមិត្តសញ្ញានៅលើទ្រូងខាងស្ដាំរបស់អ្នកពាក់ ចំណងជើងនៅលើទ្រូងខាងឆ្វេងរបស់អ្នកពាក់។'],
+                   'ខាងមុខ៖ ផ្ទាំងបោះពុម្ពតែមួយ (និមិត្តសញ្ញា និងចំណងជើងនៅខាងក្រោម) នៅលើទ្រូងខាងស្ដាំរបស់អ្នកពាក់។'],
             foot='All Right Reserved By ទីចាត់ការបុគ្គលិក, អគ្គបញ្ជាការ ២០២៦'))
 T = TXT[LANG]
 
@@ -173,8 +173,10 @@ y = head_h + panel.height + 40
 
 # table: front values (v1 sheet; title line 1 removed: height 3.6 -> 2.1 from the one-line title's aspect ratio (26.0 x 4.4),
 # title kept vertically centred so its top moves 18.0 -> 18.8) vs back values
-FR = [f"{N(30.0)} × {N(7.6)}", f"{N(8.6)} × {N(7.6)}", f"{N(12.2)} × {N(2.1)}", f"{N(9.2)} ({T['side']})",
-      f"CF→ {N(6.4)} / {N(2.8)}", 'HPS ↓ ' + N(15.2), 'HPS ↓ ' + N(18.8), N(15.0)]
+# front = the uploaded stacked design (new_design_source.webp) at 10.0 cm wide, unmodified:
+# emblem 8.5 x 7.5, gap 0.4, title 10.0 x 1.8 -> overall 10.0 x 9.8; inner edge 5.7 from CF, top 15.2 below HPS
+FR = [f"{N(10.0)} × {N(9.8)}", f"{N(8.5)} × {N(7.5)}", f"{N(10.0)} × {N(1.8)}", f"{N(0.4)} ({T['stacked']})",
+      f"CF→ {N(5.7)}", 'HPS ↓ ' + N(15.2), 'HPS ↓ ' + N(23.1), '—']
 BK = [f"{N(TOT_W)} × {N(TOT_H)}", f"{N(EMB_W)} × {N(EMB_H)}", f"{N(TIT_W)} × {N(TIT_H)}", f"{N(GAP)} ({T['stacked']})",
       T['centred'], ('seam ↓ ' if LANG == 'en' else 'ថ្នេរ ↓ ') + N(TOP_CM),
       ('seam ↓ ' if LANG == 'en' else 'ថ្នេរ ↓ ') + N(TOP_CM + EMB_H + GAP), N(TOT_W / 2)]

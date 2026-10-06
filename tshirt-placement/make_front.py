@@ -11,21 +11,19 @@ N = (lambda v: f'{v:.1f}'.translate(KM)) if LANG == 'kh' else (lambda v: f'{v:.1
 CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'
 WHITE, YEL, ACC = '#ffffff', '#ffbe28', '#ff963c'
 TXT = dict(
-    en=dict(title='ADULT M · FRONT CHEST', sub='Chest 51 cm · one transfer, centred on CF · all dimensions in cm',
+    en=dict(title='ADULT M · FRONT CHEST', sub="Chest 51 cm · one transfer on the wearer's right chest · all dimensions in cm",
             hps='high point of shoulder (HPS)', cf='centre front (CF)'),
-    kh=dict(title='អាវយឺតមនុស្សធំ ទំហំ M · ទ្រូងខាងមុខ', sub='ទទឹងទ្រូង ៥១ ស.ម · ផ្ទាំងបោះពុម្ពតែមួយ ដាក់ចំកណ្ដាល CF · ខ្នាតទាំងអស់គិតជា ស.ម',
+    kh=dict(title='អាវយឺតមនុស្សធំ ទំហំ M · ទ្រូងខាងមុខ', sub='ទទឹងទ្រូង ៥១ ស.ម · ផ្ទាំងបោះពុម្ពតែមួយ នៅលើទ្រូងខាងស្ដាំរបស់អ្នកពាក់ · ខ្នាតទាំងអស់គិតជា ស.ម',
             hps='ចំណុចខ្ពស់ស្មា (HPS)', cf='កណ្ដាលខាងមុខ (CF)'))[LANG]
 
 # geometry in tee-photo units (1 unit = 1 px of the cleaned photo); scale from the v1 sheet: 30.0 cm = 265 px
 PPC = 265 / 30.0
 G = json.load(open(os.path.join(HERE, 'front_geom.json')))
 HPS_Y, CF_X = 260 - 220, 472 - 37
-emb_w, emb_h = 8.6 * PPC, 7.6 * PPC
-emb_x, emb_y = 339 - 37, HPS_Y + 15.2 * PPC
-tit_w, tit_h = 12.2 * PPC, 2.1 * PPC
-tit_x, tit_y = CF_X + 2.8 * PPC, HPS_Y + 18.8 * PPC
-tot_x1 = tit_x + tit_w
-
+# uploaded design, used exactly as supplied (original pixels, aspect kept); content bbox in the source image:
+SRC_W, SRC_H, BX0, BY0, BX1, BY1 = 2000, 1670, 292, 107, 1758, 1541
+D_W = 10.0 * PPC; s_ = D_W / (BX1 - BX0); D_H = (BY1 - BY0) * s_
+d_x1 = CF_X - 5.7 * PPC; d_x0 = d_x1 - D_W; d_y = HPS_Y + 15.2 * PPC
 def line(x0, y0, x1, y1, c, w=1.3, dash=None):
     return f'<line x1="{x0:.1f}" y1="{y0:.1f}" x2="{x1:.1f}" y2="{y1:.1f}" stroke="{c}" stroke-width="{w}"' + (f' stroke-dasharray="{dash}"' if dash else '') + '/>'
 def txt(x, y, s, c, size=11.5, anchor='start'):
@@ -44,17 +42,12 @@ def arrow_h(y, x0, x1, label, c, above=True):
 
 svg = line(200, HPS_Y, 660, HPS_Y, '#1c1c1c', 1.0) + txt(664, HPS_Y + 4, TXT['hps'], '#1c1c1c', 11)
 svg += line(CF_X, 14, CF_X, 432, WHITE, 1.3, '6 5') + txt(CF_X + 7, 440, TXT['cf'], WHITE, 11)
-for x, y, w, h in ((emb_x, emb_y, emb_w, emb_h), (tit_x, tit_y, tit_w, tit_h)):
-    svg += f'<rect x="{x-2:.1f}" y="{y-2:.1f}" width="{w+4:.1f}" height="{h+4:.1f}" fill="none" stroke="{YEL}" stroke-width="1" stroke-dasharray="4 3.5"/>'
-lx, rx = emb_x - 24, tot_x1 + 24
-svg += arrow_v(lx, HPS_Y, emb_y, N(15.2), WHITE, 'l') + arrow_v(lx, emb_y, emb_y + emb_h, N(7.6), YEL, 'l')
-svg += arrow_v(rx, HPS_Y, tit_y, N(18.8), WHITE) + arrow_v(rx, tit_y, tit_y + tit_h, N(2.1), YEL)
-by = emb_y + emb_h + 22
-svg += arrow_h(by, emb_x, emb_x + emb_w, N(8.6), YEL) + arrow_h(by, tit_x, tit_x + tit_w, N(12.2), YEL)
-cy = by + 46
-svg += arrow_h(cy, emb_x + emb_w, CF_X, N(6.4), ACC) + arrow_h(cy, CF_X, tit_x, N(2.8), ACC)
-oy = cy + 56
-svg += arrow_h(oy, emb_x, tot_x1, '', WHITE) + txt((emb_x + tot_x1) / 2, oy + 19, T['overall'].format(w=N(30.0), h=N(7.6)), WHITE, 13, 'middle')
+svg += f'<rect x="{d_x0-2:.1f}" y="{d_y-2:.1f}" width="{D_W+4:.1f}" height="{D_H+4:.1f}" fill="none" stroke="{YEL}" stroke-width="1" stroke-dasharray="4 3.5"/>'
+lx = d_x0 - 22
+svg += arrow_v(lx, HPS_Y, d_y, N(15.2), WHITE, 'l') + arrow_v(lx, d_y, d_y + D_H, N(9.8), YEL, 'l')
+by = d_y + D_H + 22
+svg += arrow_h(by, d_x0, d_x1, N(10.0), YEL) + arrow_h(by, d_x1, CF_X, N(5.7), ACC)
+svg += txt((d_x0 + d_x1) / 2, by + 40, T['overall'].format(w=N(10.0), h=N(9.8)), WHITE, 13, 'middle')
 
 def b64png(path, jpg=False, scale=1):
     im = Image.open(path)
@@ -65,13 +58,11 @@ def b64png(path, jpg=False, scale=1):
     return base64.b64encode(buf.getvalue()).decode()
 def font64(n): return base64.b64encode(open(os.path.join(HERE, 'fonts', n), 'rb').read()).decode()
 tee = b64png(os.path.join(HERE, 'front_tee_clean.png'), jpg=True, scale=3)
-emb = b64png(os.path.join(HERE, 'art_emblem.png')); tit = b64png(os.path.join(HERE, 'art_title.png'))
-ea = Image.open(os.path.join(HERE, 'art_title.png')); th = tit_w * ea.height / ea.width
+design = base64.b64encode(open(os.path.join(HERE, 'new_design_source.webp'), 'rb').read()).decode()   # embedded byte-for-byte
 rows = ''.join(f'<tr><th>{r}</th><td>{f}</td><td>{b}</td></tr>' for r, f, b in zip(T['rows'], FR, BK))
 notes = ''.join(f'<p>{n}</p>' for n in T['notes'])
 PAGE_BG = '#e4e4e4'
-art = (f'<image href="data:image/png;base64,{emb}" x="{emb_x:.1f}" y="{emb_y:.1f}" width="{emb_w:.1f}" height="{emb_h:.1f}" preserveAspectRatio="xMidYMid meet"/>'
-       f'<image href="data:image/png;base64,{tit}" x="{tit_x:.1f}" y="{tit_y + tit_h/2 - th/2:.1f}" width="{tit_w:.1f}" height="{th:.1f}"/>')
+art = f'<image href="data:image/webp;base64,{design}" x="{d_x0 - BX0 * s_:.2f}" y="{d_y - BY0 * s_:.2f}" width="{SRC_W * s_:.2f}" height="{SRC_H * s_:.2f}"/>'
 html = f'''<!doctype html><html lang="{'km' if LANG=='kh' else 'en'}"><meta charset="utf-8"><style>
 @font-face{{font-family:NSK;font-weight:400;src:url(data:font/ttf;base64,{font64('NSK-400.ttf')})}}
 @font-face{{font-family:NSK;font-weight:700;src:url(data:font/ttf;base64,{font64('NSK-700.ttf')})}}
