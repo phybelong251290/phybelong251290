@@ -4,8 +4,8 @@ Inputs : back_mockup.webp  (tee photo with the lockup already printed on it)
 Fonts  : fonts/NSK-400.ttf, NSK-700.ttf (Noto Sans Khmer), DejaVu Sans for Latin
 Output : placement_back_<lang>.png
 Measured from the mockup (13.7 px/cm): emblem 22.0 wide, title ~26.0 wide,
-overall 26 x 29.5, top of emblem 8.0 below the back collar seam.
-Emblem height / gap / title height are read off the pixels and sum to 29.5.
+overall 26 x 25.7 (one-line title), top of emblem 8.0 below the back collar seam.
+Emblem height / gap / title height are read off the pixels and sum to 25.7 once title line 1 is removed.
 """
 import os, re, sys
 from PIL import Image, ImageDraw, ImageFont
@@ -18,9 +18,9 @@ DJV = '/usr/share/fonts/truetype/dejavu/DejaVuSans%s.ttf'
 PXCM = 13.7
 CB_X, SEAM_Y = 695, 411
 EMB = dict(x0=545, x1=846, y0=521, y1=788)           # px in the mockup
-TIT = dict(x0=518, x1=870, y0=811, y1=923)
-TOP_CM, EMB_W, TIT_W, TOT_W, TOT_H = 8.0, 22.0, 26.0, 26.0, 29.5
-EMB_H, GAP, TIT_H = 19.6, 1.7, 8.2
+TIT = dict(x0=518, x1=870, y0=811, y1=871)          # one-line title (after removing line 1)
+TOP_CM, EMB_W, TIT_W, TOT_W, TOT_H = 8.0, 22.0, 26.0, 26.0, 25.7
+EMB_H, GAP, TIT_H = 19.6, 1.7, 4.4
 
 TXT = dict(
     en=dict(title='ADULT M · BACK', sub='One transfer, centred on CB · all dimensions in cm',
@@ -122,7 +122,12 @@ WHITE, YEL, INK, ACC = (255, 255, 255), (255, 190, 40), (28, 28, 28), (255, 150,
 
 # ---------- back panel ----------
 img = Image.open(os.path.join(HERE, 'back_mockup.webp')).convert('RGB')
-img.paste(img.crop((600, 985, 790, 1020)), (600, 930))          # remove the baked-in size label
+line2 = img.crop((510, 858, 880, 928))                           # keep title line 2 (ទីចាត់ការបុគ្គលិក)
+strip = img.crop((405, 800, 505, 965))                           # plain fabric at the same height (matches the lighting gradient)
+flip = strip.transpose(Image.FLIP_LEFT_RIGHT)
+for i, x in enumerate(range(470, 920, 100)):                     # erase old title block + baked-in size label
+    img.paste(strip if i % 2 == 0 else flip, (x, 800))
+img.paste(line2, (510, 806))                                     # line 2 moves up; gap to emblem stays 1.7
 d = ImageDraw.Draw(img)
 dashed(d, (CB_X, 380), (CB_X, 975), WHITE)
 text(d, (CB_X + 8, 376), T['cb'], 'Bold', 14, WHITE)
