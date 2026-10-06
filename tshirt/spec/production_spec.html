@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T-Shirt Production Specification</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Khmer:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  @page { size: A4; margin: 16mm 15mm 18mm 15mm; }
+  :root {
+    --ink: #1b1d17; --muted: #5d6253; --line: #cfd2c4; --soft: #f2f3ec;
+    --olive: #63684B; --olive-dk: #3f4330; --gold: #C9A04E; --navy: #131A63; --red: #A31917;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #fff; }
+  body { font-family: "Inter", "Noto Sans Khmer", sans-serif; color: var(--ink); font-size: 9.6pt; line-height: 1.45; }
+  .km { font-family: "Noto Sans Khmer", sans-serif; }
+  h1, h2, h3 { margin: 0; line-height: 1.2; }
+  h2 { font-size: 13.5pt; font-weight: 700; margin: 0 0 8px; padding-top: 2px; display: flex; gap: 10px; align-items: baseline; }
+  h2 .n { color: #fff; background: var(--olive-dk); font-size: 9pt; padding: 2px 7px; border-radius: 3px; letter-spacing: .04em; }
+  h3 { font-size: 10.5pt; font-weight: 700; margin: 12px 0 5px; }
+  p { margin: 0 0 7px; }
+  ul, ol { margin: 0 0 8px; padding-left: 18px; }
+  li { margin-bottom: 3px; }
+  section { margin-bottom: 18px; }
+  .page-break { break-before: page; }
+  .avoid { break-inside: avoid; }
+  table { width: 100%; border-collapse: collapse; margin: 4px 0 10px; font-size: 8.9pt; break-inside: avoid; }
+  th, td { border: 1px solid var(--line); padding: 5px 7px; text-align: left; vertical-align: top; }
+  th { background: var(--soft); font-weight: 600; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .note { font-size: 8.6pt; color: var(--muted); }
+  .callout { border-left: 4px solid var(--olive); background: var(--soft); padding: 8px 11px; margin: 8px 0 10px; break-inside: avoid; }
+  .callout.warn { border-left-color: var(--red); background: #fbefee; }
+  .fill { display: inline-block; min-width: 120px; border-bottom: 1px solid #888; height: 1em; vertical-align: bottom; }
+  figure { margin: 6px 0 12px; break-inside: avoid; }
+  figure img { width: 100%; display: block; border: 1px solid var(--line); }
+  figcaption { font-size: 8.4pt; color: var(--muted); margin-top: 4px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .tag { display: inline-block; font-size: 7.6pt; font-weight: 700; letter-spacing: .05em; padding: 1px 6px; border-radius: 3px; color: #fff; }
+  .tag.crit { background: var(--red); } .tag.maj { background: #c26a12; } .tag.min { background: #6b705c; }
+  .dag { color: var(--red); font-weight: 700; }
+
+  /* cover */
+  .cover { height: 258mm; display: flex; flex-direction: column; }
+  .cover .band { background: var(--olive-dk); color: #fff; padding: 9px 14px; font-size: 8.4pt; letter-spacing: .14em; text-transform: uppercase; display: flex; justify-content: space-between; }
+  .cover .hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 10px 0; }
+  .cover .hero img { width: 62mm; margin-bottom: 14px; }
+  .cover .km-title { font-size: 15pt; font-weight: 700; color: var(--olive-dk); margin-bottom: 2px; }
+  .cover h1 { font-size: 25pt; font-weight: 800; letter-spacing: -.01em; margin: 10px 0 6px; }
+  .cover .sub { font-size: 11.5pt; color: var(--muted); }
+  .cover .status { margin-top: 16px; display: inline-block; border: 2px solid var(--red); color: var(--red); font-weight: 800; letter-spacing: .1em; padding: 6px 14px; font-size: 10pt; }
+  .cover .status small { display: block; font-weight: 500; letter-spacing: 0; font-size: 8.3pt; color: var(--ink); margin-top: 2px; }
+  .cover table td:first-child { width: 36%; background: var(--soft); font-weight: 600; }
+
+  /* don'ts grid */
+  .dont-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 6px 0 10px; break-inside: avoid; }
+  .dont { border: 1px solid var(--line); border-radius: 4px; padding: 6px; text-align: center; font-size: 8pt; }
+  .dont .box { height: 30mm; display: flex; align-items: center; justify-content: center; overflow: hidden; background: var(--olive); border-radius: 3px; margin-bottom: 5px; position: relative; }
+  .dont .box img { height: 25mm; }
+  .dont b { display: block; font-size: 8.3pt; }
+  .dont.ok { border: 2px solid #2f7d32; }
+  .dont.ok b { color: #2f7d32; }
+  .dont.no b { color: var(--red); }
+  .x::after { content: "✕"; position: absolute; top: 2px; right: 6px; color: #fff; background: var(--red); border-radius: 50%; width: 16px; height: 16px; font-size: 10px; line-height: 16px; font-weight: 700; }
+  .swatch { display: inline-block; width: 14px; height: 14px; border-radius: 2px; vertical-align: -3px; margin-right: 6px; border: 1px solid rgba(0,0,0,.25); }
+
+  .clear-fig { display: flex; gap: 14px; align-items: center; break-inside: avoid; }
+  .clear-fig .cs { position: relative; width: 40mm; height: 40mm; background: var(--olive); flex: none; }
+  .clear-fig .cs .zone { position: absolute; inset: 3.4mm; outline: 1.5px dashed #fff; }
+  .clear-fig .cs img { position: absolute; inset: 3.4mm; width: calc(100% - 6.8mm); }
+  .sig td { height: 15mm; }
+</style>
+</head>
+<body>
+
+<!-- ============ COVER ============ -->
+<div class="cover">
+  <div class="band"><span>Production specification · Garments</span><span>Document No. ________________</span></div>
+  <div class="hero">
+    <img src="assets/crest.png" alt="Department crest">
+    <div class="note" style="font-size:10pt;letter-spacing:.12em;text-transform:uppercase">Personnel Department</div>
+    <h1>Official T-Shirt Production Specification</h1>
+    <div class="sub">Crew-neck tee · Military green · DTF heat transfer · Sizes S–3XL</div>
+    <div class="status">MANDATORY PRODUCTION STANDARD
+      <small>Binding on every production run once signed in Section 14</small></div>
+  </div>
+  <table>
+    <tr><td>Document number</td><td><span class="fill"></span></td></tr>
+    <tr><td>Revision / date</td><td>Rev 0 · 6 October 2026</td></tr>
+    <tr><td>Insignia-use approval reference</td><td><span class="fill"></span></td></tr>
+    <tr><td>Approving authority</td><td><span class="fill"></span></td></tr>
+    <tr><td>Order / purchase reference</td><td><span class="fill"></span></td></tr>
+    <tr><td>Authorized vendor</td><td><span class="fill"></span></td></tr>
+    <tr><td>Authorized quantity (all sizes)</td><td><span class="fill"></span></td></tr>
+  </table>
+</div>
+
+<!-- ============ 1 ============ -->
+<section class="page-break">
+  <h2><span class="n">1</span>Purpose, scope and authority</h2>
+  <p>This document sets out how the official Personnel Department crew-neck T-shirt must be produced: garment, artwork, crest placement, dimensions, print process, quality control, insignia etiquette and disposal of rejects. It applies to every vendor, printer and person who handles the artwork or produces the garment.</p>
+  <ul>
+    <li><b>Mandatory.</b> Every requirement written as "must" or "never" is compulsory. Any deviation needs prior written approval from the approving authority named on the cover.</li>
+    <li><b>Order of precedence.</b> If documents conflict, the order is: (1) the signed approved pre-production sample, (2) this specification, (3) the master artwork files, (4) the purchase order.</li>
+    <li><b>Authorized use only.</b> The crest is an official insignia. It is authorized for this order and this quantity only, under the approval reference on the cover.</li>
+    <li>Values marked <span class="dag">†</span> are recommended defaults set for this specification. The approving authority may change them before signing.</li>
+  </ul>
+</section>
+
+<!-- ============ 2 ============ -->
+<section>
+  <h2><span class="n">2</span>Definitions and measuring method</h2>
+  <table>
+    <tr><th style="width:24%">Term</th><th>Meaning</th></tr>
+    <tr><td><b>HPS</b> (high point shoulder)</td><td>The point where the shoulder seam meets the collar rib, on the wearer's left side.</td></tr>
+    <tr><td><b>CF</b> (centre front)</td><td>The vertical centre line of the garment front, found by folding the garment in half lengthwise, sleeve to sleeve.</td></tr>
+    <tr><td><b>Front collar seam</b></td><td>The stitch line where the collar rib joins the front body at CF.</td></tr>
+    <tr><td><b>Wearer's left</b></td><td>The left side of the person wearing the shirt. On a garment laid face-up, this is the <b>right</b> side as you look at it.</td></tr>
+    <tr><td><b>Print width</b></td><td>The horizontal distance between the outermost printed points of the artwork (the ends of the Khmer text line).</td></tr>
+    <tr><td><b>PPS</b></td><td>Pre-production sample: a finished garment made with the bulk materials and process, submitted for written approval before bulk production.</td></tr>
+  </table>
+  <p><b>How to measure:</b> lay the garment flat, face-up, smooth and unstretched, on a hard surface. Measure with a steel rule or a calibrated tape, in centimetres. Find CF by folding, never by eye.</p>
+</section>
+
+<!-- ============ 3 ============ -->
+<section class="avoid">
+  <h2><span class="n">3</span>Garment specification</h2>
+  <table>
+    <tr><th style="width:30%">Item</th><th>Requirement</th></tr>
+    <tr><td>Style</td><td>Short-sleeve crew-neck T-shirt, regular fit, rib collar, side-seamed or tubular body</td></tr>
+    <tr><td>Fabric</td><td>100% cotton single jersey, combed or ring-spun, pre-shrunk; 180–200 g/m² <span class="dag">†</span></td></tr>
+    <tr><td>Colour</td><td>Military green, matched to the approved physical colour standard. Digital reference ≈ <span class="swatch" style="background:#63684B"></span>#63684B (sampled from the reference image; for screens only). Textile code (e.g. Pantone TCX): <span class="fill"></span></td></tr>
+    <tr><td>Size range</td><td>S, M, L, XL, 2XL, 3XL. Reference size M: chest width 51 cm, measured flat 2.5 cm below the armhole</td></tr>
+    <tr><td>Shade consistency</td><td>All garments in one order must come from the same dye lot wherever possible. Mixed lots must be packed separately and declared.</td></tr>
+    <tr><td>Labels</td><td>Size and care label inside the neck or side seam only. No vendor or commercial branding on the outside of the garment.</td></tr>
+  </table>
+</section>
+
+<!-- ============ 4 ============ -->
+<section class="page-break">
+  <h2><span class="n">4</span>Approved artwork and master files</h2>
+  <p>Production must use <b>only</b> the master files below, exactly as supplied. They are transparent PNGs at 300 dpi, sRGB, with hard edges: every pixel is fully opaque or fully transparent, with no soft shadows, so the white underbase prints clean.</p>
+  <table>
+    <tr><th>File</th><th>Use</th><th class="num">Pixels (W × H)</th><th class="num">Print size (W × H)</th></tr>
+    <tr><td>front_S_25cm.png</td><td>Full front, size S</td><td class="num">2953 × 2888</td><td class="num">25.0 × 24.5 cm</td></tr>
+    <tr><td>front_M-L_28cm.png</td><td>Full front, sizes M and L</td><td class="num">3307 × 3234</td><td class="num">28.0 × 27.4 cm</td></tr>
+    <tr><td>front_XL-2XL_30cm.png</td><td>Full front, sizes XL and 2XL</td><td class="num">3543 × 3464</td><td class="num">30.0 × 29.3 cm</td></tr>
+    <tr><td>front_3XL_32cm.png</td><td>Full front, size 3XL</td><td class="num">3780 × 3696</td><td class="num">32.0 × 31.3 cm</td></tr>
+    <tr><td>leftchest_10cm.png</td><td>Left chest, all sizes</td><td class="num">1181 × 1155</td><td class="num">10.0 × 9.8 cm</td></tr>
+  </table>
+  <div class="callout warn"><b>Never</b> redraw, trace, re-type, re-colour, or regenerate the crest or its Khmer text, including with AI image tools. Never take the crest from the internet, social media or a photograph. If a file seems damaged or the wrong size, stop and ask for a replacement master file.</div>
+  <p><b>Approved wording.</b> The Khmer text must match the master file exactly: banner <span class="km">អគ្គបញ្ជាការ</span>; title line <span class="km">ទីចាត់ការបុគ្គលិក</span>.</p>
+</section>
+
+<!-- ============ 5 ============ -->
+<section class="avoid">
+  <h2><span class="n">5</span>Colour reference</h2>
+  <p>These values were sampled from the master artwork. Use them to check colour on screen and in the RIP. The <b>approved PPS under daylight (D65)</b> is the final colour standard.</p>
+  <table>
+    <tr><th>Element</th><th>Reference (sRGB)</th><th>Notes</th></tr>
+    <tr><td>Gold, highlight</td><td><span class="swatch" style="background:#FBE492"></span>#FBE492</td><td rowspan="3">Metallic gold is printed as a CMYK gradient, not foil. Keep the gradient; do not flatten it to one gold.</td></tr>
+    <tr><td>Gold, mid-tone</td><td><span class="swatch" style="background:#EFCB61"></span>#EFCB61 / #D5AC5E</td></tr>
+    <tr><td>Gold, shade</td><td><span class="swatch" style="background:#A46C2F"></span>#A46C2F</td></tr>
+    <tr><td>Royal navy (shield, banner, text outline)</td><td><span class="swatch" style="background:#131A63"></span>#131A63</td><td>Must stay distinctly blue, not black</td></tr>
+    <tr><td>Red (star)</td><td><span class="swatch" style="background:#A31917"></span>#A31917</td><td>Must not shift towards orange or brown</td></tr>
+    <tr><td>Khmer title fill</td><td><span class="swatch" style="background:#FDDB6A"></span>#FDDB6A</td><td>Bright yellow-gold. Must be clearly legible on military green.</td></tr>
+  </table>
+</section>
+
+<!-- ============ 6 ============ -->
+<section class="page-break">
+  <h2><span class="n">6</span>Logo placement</h2>
+  <figure>
+    <img style="width:88%;margin:0 auto" src="assets/placement_template.jpg" alt="Placement template, positions A and B">
+    <figcaption>Figure 1. Placement template, reference size M (scale set by chest width 51 cm).</figcaption>
+  </figure>
+  <table>
+    <tr><th style="width:18%">Position</th><th>Artwork</th><th>Vertical reference</th><th>Horizontal reference</th></tr>
+    <tr><td><b>A · Full front</b></td><td>front_[size].png</td><td><b>Top edge</b> of the artwork 7.5 cm below the front collar seam</td><td>Centred on CF</td></tr>
+    <tr><td><b>B · Left chest</b> (wearer's left)</td><td>leftchest_10cm.png</td><td><b>Centre</b> of the artwork 18 cm below HPS</td><td><b>Centre</b> of the artwork 10 cm from CF, towards the wearer's left</td></tr>
+    <tr><td>C · Back yoke</td><td colspan="3">Reserved. Width 7–8 cm, top edge 2.5–3.5 cm below the back collar seam. <b>Not authorized</b> until separate artwork is approved and issued.</td></tr>
+  </table>
+  <p><b>A and B are alternatives:</b> one garment carries either A or B, never both, unless the purchase order states otherwise. Purchase order position(s): <span class="fill"></span></p>
+
+  <h3>Placement tolerances <span class="dag">†</span></h3>
+  <table>
+    <tr><th>Check</th><th class="num">Tolerance</th></tr>
+    <tr><td>Vertical position (A: top edge; B: centre)</td><td class="num">± 0.5 cm</td></tr>
+    <tr><td>Horizontal position (A: centring on CF; B: 10 cm offset)</td><td class="num">± 0.3 cm</td></tr>
+    <tr><td>Tilt: the Khmer text baseline must be parallel to the hem</td><td class="num">≤ 1°</td></tr>
+    <tr><td>Print width compared with the specified width</td><td class="num">± 2 %</td></tr>
+  </table>
+
+  <div class="two">
+    <figure><img src="assets/mockup_A_full_front.jpg" alt="Mockup position A"><figcaption>Figure 2. Position A, full front (size M, 28 cm).</figcaption></figure>
+    <figure><img src="assets/mockup_B_left_chest.jpg" alt="Mockup position B"><figcaption>Figure 3. Position B, left chest (10 cm).</figcaption></figure>
+  </div>
+</section>
+
+<!-- ============ 7 ============ -->
+<section>
+  <h2><span class="n">7</span>Size and dimension chart</h2>
+  <table>
+    <tr><th>Garment size</th><th>Position A file</th><th class="num">A print size (W × H)</th><th class="num">A top edge below collar seam</th><th class="num">B print size</th><th class="num">B centre (from CF / below HPS)</th></tr>
+    <tr><td>S</td><td>front_S_25cm</td><td class="num">25.0 × 24.5 cm</td><td class="num">7.5 cm</td><td class="num">10.0 × 9.8 cm</td><td class="num">10 / 18 cm</td></tr>
+    <tr><td>M</td><td>front_M-L_28cm</td><td class="num">28.0 × 27.4 cm</td><td class="num">7.5 cm</td><td class="num">10.0 × 9.8 cm</td><td class="num">10 / 18 cm</td></tr>
+    <tr><td>L</td><td>front_M-L_28cm</td><td class="num">28.0 × 27.4 cm</td><td class="num">7.5 cm</td><td class="num">10.0 × 9.8 cm</td><td class="num">10 / 18 cm</td></tr>
+    <tr><td>XL</td><td>front_XL-2XL_30cm</td><td class="num">30.0 × 29.3 cm</td><td class="num">7.5 cm</td><td class="num">10.0 × 9.8 cm</td><td class="num">10 / 18 cm</td></tr>
+    <tr><td>2XL</td><td>front_XL-2XL_30cm</td><td class="num">30.0 × 29.3 cm</td><td class="num">7.5 cm</td><td class="num">10.0 × 9.8 cm</td><td class="num">10 / 18 cm</td></tr>
+    <tr><td>3XL</td><td>front_3XL_32cm</td><td class="num">32.0 × 31.3 cm</td><td class="num">7.5 cm</td><td class="num">10.0 × 9.8 cm</td><td class="num">10 / 18 cm</td></tr>
+  </table>
+  <ul>
+    <li>Maximum artwork height at position A is <b>33 cm</b>. Every file above is within this limit.</li>
+    <li>Scale the artwork <b>proportionally only</b>. Width and height must always stay locked together.</li>
+    <li>The size-M placement figures apply to every size. Check placement on the S and 3XL samples during PPS approval (Section 11). Any change for a particular size must be agreed in writing and added to this table.</li>
+    <li>Minimum detail: printed lines must be at least 0.5 mm wide <span class="dag">†</span>. At 10 cm (position B), the banner text <span class="km">អគ្គបញ្ជាការ</span> is about 3 mm tall. Its legibility must be confirmed on the PPS before bulk production.</li>
+  </ul>
+</section>
+
+<!-- ============ 8 ============ -->
+<section class="page-break">
+  <h2><span class="n">8</span>Insignia and design etiquette</h2>
+  <p>The crest represents the institution and must be treated with respect at every stage, from file handling to finished garment. Everyone involved in production must follow these rules.</p>
+  <ol>
+    <li><b>Reproduce exactly.</b> Use the master files only, at 100% of their supplied proportions.</li>
+    <li><b>Never alter the crest.</b> Do not re-colour, stretch, squash, rotate, mirror, crop or partially hide it. Do not add or remove elements, and do not add effects such as shadow, glow, bevel or distressing.</li>
+    <li><b>Upright, always.</b> The crown and radiant star must point straight up towards the collar.</li>
+    <li><b>Position of honour.</b> The crest may only be printed on the upper torso, at the approved positions: full front centred, or left chest over the heart. Never below the waist, on sleeves, at the hem, or anywhere it could be sat on or folded under.</li>
+    <li><b>Clear space.</b> Keep a clear zone of at least 10% of the print width on every side (2.8 cm at 28 cm, 1.0 cm at 10 cm). No other graphics, text, seams or pockets may enter it.</li>
+    <li><b>Precedence.</b> No other logo, slogan or graphic may be printed larger than the crest, above it, or touching it. No commercial, vendor or sponsor marks on the outside of the garment.</li>
+    <li><b>Approved background only.</b> Print only on the approved military green. Any other garment colour needs new written approval and a new PPS.</li>
+    <li><b>Exact wording.</b> Never re-type or re-set the Khmer text in another font. It is part of the approved artwork.</li>
+    <li><b>Respectful handling.</b> Printed garments and transfer films must not be placed on the floor, stepped on or used as wipes. Store them flat and covered.</li>
+  </ol>
+
+  <h3>Clear space</h3>
+  <div class="clear-fig">
+    <div class="cs"><div class="zone"></div><img src="assets/crest.png" alt=""></div>
+    <p class="note">The dashed line marks the outer edge of the artwork. The clear zone around it is at least 10% of the print width on every side. Nothing may be placed inside it.</p>
+  </div>
+
+  <h3>Correct and incorrect use</h3>
+  <div class="dont-grid">
+    <div class="dont ok"><div class="box"><img src="assets/crest.png" alt=""></div><b>✓ Correct</b>Master file, upright, approved green</div>
+    <div class="dont no"><div class="box x"><img src="assets/crest.png" style="transform:scaleX(1.45)" alt=""></div><b>Stretched or squashed</b>Proportions must stay locked</div>
+    <div class="dont no"><div class="box x"><img src="assets/crest.png" style="transform:rotate(18deg)" alt=""></div><b>Rotated or tilted</b>Always upright</div>
+    <div class="dont no"><div class="box x"><img src="assets/crest.png" style="filter:hue-rotate(150deg) saturate(1.4)" alt=""></div><b>Re-coloured</b>No colour changes</div>
+    <div class="dont no"><div class="box x"><img src="assets/crest.png" style="height:44mm;margin-top:16mm" alt=""></div><b>Cropped</b>Show the complete crest and text</div>
+    <div class="dont no"><div class="box x"><img src="assets/crest.png" style="filter:drop-shadow(3mm 3mm 2mm rgba(0,0,0,.75))" alt=""></div><b>Effects added</b>No shadow, glow or bevel</div>
+    <div class="dont no"><div class="box x" style="background:#e8e6df"><img src="assets/crest.png" alt=""></div><b>Unapproved garment colour</b>Military green only</div>
+    <div class="dont no"><div class="box x"><img src="assets/crest.png" style="transform:scaleY(-1)" alt=""></div><b>Inverted or mirrored</b>Critical defect</div>
+  </div>
+</section>
+
+<!-- ============ 9 ============ -->
+<section class="page-break">
+  <h2><span class="n">9</span>File preparation by software</h2>
+  <p>Use any of the applications below to check the files, lay them out or hand them to the RIP. In every application the output must be a <b>transparent PNG</b> at the pixel size in Section 4, sRGB, with nothing added.</p>
+  <table>
+    <tr><th style="width:15%">Application</th><th style="width:30%">Canvas / document setup</th><th>Placing and exporting</th></tr>
+    <tr><td><b>Adobe Photoshop</b></td><td>File › New: width and height in cm from Section 4; Resolution 300 px/inch; RGB, 8-bit; Background Contents: Transparent</td><td>File › Place Embedded, then confirm 100% scale (no resampling). File › Export › Export As › PNG: Transparency on, "Smaller file (8-bit)" off, scale 100%. Check Image › Image Size shows the Section 4 pixel size.</td></tr>
+    <tr><td><b>Adobe Illustrator</b></td><td>Artboard in cm at the Section 4 print size; RGB document</td><td>File › Place (linked). In the Links panel, effective PPI must read 300. File › Export › Export As › PNG: Resolution 300 ppi, Background Transparent, Anti-aliasing <b>None</b> (keeps the hard edges).</td></tr>
+    <tr><td><b>Adobe Express</b></td><td>Custom size in <b>pixels</b> (e.g. 3307 × 3234 px for M/L)</td><td>Upload the PNG and size it to fill the canvas exactly. Download › PNG with Transparent background. Check the downloaded file's pixel size.</td></tr>
+    <tr><td><b>Figma</b></td><td>Frame at the Section 4 pixel size; remove the frame fill so it is transparent</td><td>Place the image at W/H exactly equal to the frame, with no crop. Export › PNG › 1x. Figma reduces images over 4096 px, but all master files are under that. Figma does not save DPI, so the RIP operator must set the print width from Section 7.</td></tr>
+    <tr><td><b>Canva</b></td><td>Create design › Custom size in <b>px</b> (not cm), Section 4 pixel size</td><td>Upload, then set the image to fill the page with no crop. Share › Download › PNG, size ×1, tick Transparent background. Do not apply Canva filters or "Enhance". Check the downloaded file's pixel size.</td></tr>
+    <tr><td><b>Sketch</b></td><td>Artboard at the Section 4 pixel size; untick Background Color</td><td>Insert the image at exact W/H. Export › PNG › 1x. Like Figma, the RIP operator sets the print width.</td></tr>
+  </table>
+  <div class="callout warn"><b>In every application, never:</b> export as JPG; flatten onto a white or green background; apply automatic enhancement, sharpening, compression or "remove background"; upscale beyond the master files; or embed the artwork in a mockup and print the mockup.</div>
+</section>
+
+<!-- ============ 10 ============ -->
+<section>
+  <h2><span class="n">10</span>DTF print and press process</h2>
+  <h3>10.1 Printing (RIP)</h3>
+  <ul>
+    <li>Import the master PNG and set the print width from Section 7. Lock the aspect ratio, and do not resample beyond the master file.</li>
+    <li>Colour: sRGB input, perceptual or relative colorimetric rendering. Match the approved PPS, not the screen.</li>
+    <li>White underbase: 100% under all printed areas, choked by 1–2 px (0.1–0.2 mm) <span class="dag">†</span>, with no white outside the artwork.</li>
+    <li>Print a 10 cm test strip at the start of every session and compare it with the approved PPS.</li>
+  </ul>
+  <h3>10.2 Powder and curing</h3>
+  <ul><li>Apply the hot-melt powder evenly, remove all excess, and cure at the film and powder supplier's specified temperature and time. Record the supplier, product and batch in the production log.</li></ul>
+  <h3>10.3 Heat press</h3>
+  <table>
+    <tr><th>Step</th><th class="num">Temperature</th><th class="num">Time</th><th>Pressure / notes</th></tr>
+    <tr><td>Pre-press garment (removes moisture and wrinkles)</td><td class="num">160 °C</td><td class="num">3–5 s <span class="dag">†</span></td><td>Light</td></tr>
+    <tr><td>Transfer press (cotton)</td><td class="num">160 °C</td><td class="num">15 s</td><td>Medium-firm; peel hot or cold according to the film supplier's instructions</td></tr>
+    <tr><td>Finishing press</td><td class="num">160 °C</td><td class="num">10 s</td><td>Medium-firm, with a PTFE (Teflon) sheet or parchment over the print</td></tr>
+  </table>
+  <p>Align with a T-square or laser guide using the measurements in Sections 6 and 7. Never align by eye.</p>
+  <h3>10.4 Care instructions (on the care label)</h3>
+  <p>Wash inside out at a maximum of 30 °C · No bleach · Do not tumble dry on high heat · Do not iron directly on the print · Do not dry-clean.</p>
+</section>
+
+<!-- ============ 11 ============ -->
+<section class="page-break">
+  <h2><span class="n">11</span>Quality control and acceptance</h2>
+  <h3>11.1 Pre-production sample (PPS)</h3>
+  <ul>
+    <li>The vendor must submit <b>one PPS per position for sizes S, M and 3XL</b> <span class="dag">†</span>, made with the bulk garment, film, ink and press settings.</li>
+    <li>Bulk production may only start after the PPS is approved in writing. The approved PPS is then sealed, signed and kept as the reference standard.</li>
+  </ul>
+  <h3>11.2 Tests on the PPS and first bulk pieces</h3>
+  <table>
+    <tr><th>Test</th><th>Method</th><th>Pass criterion</th></tr>
+    <tr><td>Placement</td><td>Measure as in Section 2</td><td>Within the Section 6 tolerances</td></tr>
+    <tr><td>Colour</td><td>Side by side with the approved PPS under daylight (D65)</td><td>No visible difference in the gold, navy or red</td></tr>
+    <tr><td>Edge quality</td><td>Inspect with a 10× loupe</td><td>No white halo, no fuzzy edges, all fine lines intact</td></tr>
+    <tr><td>Stretch</td><td>Stretch the print area by hand to about 1.5× its width, hold, release</td><td>No cracking, no lifting</td></tr>
+    <tr><td>Wash durability</td><td>5 cycles at 30 °C, inside out, line dry</td><td>No peeling, cracking or noticeable fading</td></tr>
+    <tr><td>Adhesion</td><td>Try to lift the print edge with a fingernail</td><td>Edges stay fully bonded</td></tr>
+  </table>
+  <h3>11.3 Bulk inspection</h3>
+  <p>Inspect each lot to ISO 2859-1, general inspection level II, using these acceptance quality limits <span class="dag">†</span>: <b>Critical 0</b> · <b>Major 2.5</b> · <b>Minor 4.0</b>.</p>
+  <table>
+    <tr><th style="width:14%">Class</th><th>Defects</th></tr>
+    <tr><td><span class="tag crit">CRITICAL</span></td><td>Altered, distorted or incomplete crest; misspelled or re-typed Khmer text; crest inverted, mirrored or tilted; crest printed at an unapproved position; wrong garment colour; any foreign mark on the garment. <b>Zero accepted.</b> Garments with a critical defect must be destroyed (Section 13).</td></tr>
+    <tr><td><span class="tag maj">MAJOR</span></td><td>Placement outside tolerance; visible colour shift from the PPS; white halo or underbase showing; peeling, cracking or bubbles; ghosting or double image; smudges or stains in the print area; garment hole or seam defect.</td></tr>
+    <tr><td><span class="tag min">MINOR</span></td><td>Slight gloss variation; loose threads away from the print; small packing or labelling faults.</td></tr>
+  </table>
+</section>
+
+<!-- ============ 12 ============ -->
+<section class="avoid">
+  <h2><span class="n">12</span>Packing, labelling and delivery</h2>
+  <ul>
+    <li>Fold each garment with the print facing out and centred. Put tissue or a PTFE sheet over the print if it is folded before it has fully cooled.</li>
+    <li>Individual poly bag with a size sticker. Pack cartons by size, with the size, quantity and order reference on two sides.</li>
+    <li>Delivery note to include: quantity per size and position, number of rejects destroyed, and transfer films printed and used (Section 13 reconciliation).</li>
+  </ul>
+</section>
+
+<!-- ============ 13 ============ -->
+<section class="avoid">
+  <h2><span class="n">13</span>Security, confidentiality and disposal</h2>
+  <ul>
+    <li>Master files are confidential. Store them only on the production workstation and never share them with third parties or post them online.</li>
+    <li>Produce only the authorized quantity. Overruns, spare transfers and spare films must be handed back to the department or destroyed under supervision.</li>
+    <li><b>Rejects and misprints</b> must be destroyed by cutting through the crest before disposal. They must never be sold, donated or reused intact.</li>
+    <li>After delivery, delete the master files from all vendor systems and confirm in writing.</li>
+    <li><b>Reconciliation</b> (recorded on the delivery note): transfers printed = garments delivered + rejects destroyed + spare transfers returned or destroyed.</li>
+  </ul>
+</section>
+
+<!-- ============ 14 ============ -->
+<section class="page-break">
+  <h2><span class="n">14</span>Approval and sign-off</h2>
+  <p>This specification becomes mandatory for production once it is signed below.</p>
+  <table class="sig">
+    <tr><th style="width:20%">Role</th><th>Name and rank</th><th style="width:22%">Signature</th><th style="width:16%">Date</th></tr>
+    <tr><td>Prepared by</td><td></td><td></td><td></td></tr>
+    <tr><td>Checked by</td><td></td><td></td><td></td></tr>
+    <tr><td>Approved by</td><td></td><td></td><td></td></tr>
+  </table>
+  <h3>Vendor acknowledgement</h3>
+  <p>We have received and read this specification and the master artwork files. We agree to produce, inspect, pack, secure and dispose of all materials exactly as specified, and to request written approval before any deviation.</p>
+  <table class="sig">
+    <tr><th style="width:20%">Company</th><th>Authorized representative</th><th style="width:22%">Signature and stamp</th><th style="width:16%">Date</th></tr>
+    <tr><td></td><td></td><td></td><td></td></tr>
+  </table>
+
+  <h3>Revision history</h3>
+  <table>
+    <tr><th style="width:10%">Rev</th><th style="width:20%">Date</th><th>Change</th><th style="width:22%">Approved by</th></tr>
+    <tr><td>0</td><td>6 Oct 2026</td><td>First issue for approval</td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td></tr>
+  </table>
+</section>
+
+</body>
+</html>
