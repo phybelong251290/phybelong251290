@@ -1,0 +1,221 @@
+"""Adult M back placement sheet (EN / KH).  Usage: python3 make_sheet.py en|kh
+
+Inputs : back_mockup.webp  (tee photo with the lockup already printed on it)
+Fonts  : fonts/NSK-400.ttf, NSK-700.ttf (Noto Sans Khmer), DejaVu Sans for Latin
+Output : placement_back_<lang>.png
+Measured from the mockup (13.7 px/cm): emblem 22.0 wide, title ~26.0 wide,
+overall 26 x 25.7 (one-line title), top of emblem 8.0 below the back collar seam.
+Emblem height / gap / title height are read off the pixels and sum to 25.7 once title line 1 is removed.
+"""
+import os, re, sys
+from PIL import Image, ImageDraw, ImageFont
+
+LANG = sys.argv[1] if len(sys.argv) > 1 else 'en'
+HERE = os.path.dirname(os.path.abspath(__file__))
+FONTS = os.path.join(HERE, 'fonts')
+DJV = '/usr/share/fonts/truetype/dejavu/DejaVuSans%s.ttf'
+
+PXCM = 13.7
+CB_X, SEAM_Y = 695, 411
+EMB = dict(x0=545, x1=846, y0=521, y1=788)           # px in the mockup
+TIT = dict(x0=518, x1=870, y0=811, y1=871)          # one-line title (after removing line 1)
+TOP_CM, EMB_W, TIT_W, TOT_W, TOT_H = 8.0, 22.0, 26.0, 26.0, 25.7
+EMB_H, GAP, TIT_H = 19.6, 1.7, 4.4
+
+TXT = dict(
+    en=dict(title='ADULT M · BACK', sub='One transfer, centred on CB · all dimensions in cm',
+            cb='CB', seam='back collar seam', overall='{w} × {h} cm', tab='PLACEMENT MEASUREMENTS (cm)',
+            cols=('Measurement', 'Front chest', 'Back'),
+            rows=['Transfer overall (W × H)', 'Emblem (W × H)', 'Title (W × H)', 'Gap emblem → title',
+                  'Horizontal position', 'Top of emblem', 'Top of title', 'Centre mark from transfer left edge'],
+            side='side by side', stacked='stacked', centred='centred on CB',
+            hdr='HEAT PRESS', leg='HPS = high point of shoulder · CF = centre front · CB = centre back',
+            notes=['1. Pre-press the shirt 5 s to remove moisture, then 2 s to smooth the surface.',
+                   '2. FRONT: one transfer on the wearer\'s right chest; its inner edge 5.7 from the CF crease, top 15.2 below HPS.',
+                   '3. BACK: crease the centre back (CB); mark 13.0 from the transfer left edge; top of emblem 8.0 below the back collar seam.',
+                   '4. Keep each transfer level (square to the crease). Tack with heat tape.',
+                   '5. Press 160 °C, 15 s, medium-firm. Peel per film. Finish 10 s under parchment. Press the front first; cover it with parchment when pressing the back.',
+                   "Front: one transfer (emblem with the title below) on the wearer's RIGHT chest."],
+            foot='All Right Reserved By Personnel Department, General Command, 2026'),
+    kh=dict(title='អាវយឺតមនុស្សធំ ទំហំ M · ខាងក្រោយ', sub='ផ្ទាំងបោះពុម្ពតែមួយ ដាក់ចំកណ្ដាលខ្នង (CB) · ខ្នាតទាំងអស់គិតជា ស.ម',
+            cb='កណ្ដាលខ្នង (CB)', seam='ថ្នេរកអាវខាងក្រោយ', overall='{w} × {h} ស.ម', tab='ខ្នាត និងទីតាំងដាក់ (ស.ម)',
+            cols=('ការវាស់', 'ទ្រូងខាងមុខ', 'ខាងក្រោយ'),
+            rows=['ទំហំផ្ទាំងបោះពុម្ពសរុប (ទទឹង × កម្ពស់)', 'និមិត្តសញ្ញា (ទទឹង × កម្ពស់)', 'ចំណងជើង (ទទឹង × កម្ពស់)',
+                  'គម្លាតពីនិមិត្តសញ្ញា ដល់ចំណងជើង', 'ទីតាំងផ្ដេក', 'គែមលើនិមិត្តសញ្ញា', 'គែមលើចំណងជើង',
+                  'សញ្ញាកណ្ដាល ពីគែមឆ្វេងផ្ទាំងបោះពុម្ព'],
+            side='នៅក្បែរគ្នា', stacked='នៅលើក្រោម', centred='ចំកណ្ដាល CB',
+            hdr='វិធីអ៊ុតផ្ទាំងរូប (Heat Press)', leg='HPS = ចំណុចខ្ពស់ស្មា · CF = បន្ទាត់កណ្ដាលខាងមុខ · CB = បន្ទាត់កណ្ដាលខាងក្រោយ',
+            notes=['១. អ៊ុតអាវមុន ៥ វិនាទី បន្ទាប់មកអ៊ុត ២ វិនាទី ដើម្បីឲ្យផ្ទៃរាបស្មើ។',
+                   '២. ខាងមុខ៖ ផ្ទាំងបោះពុម្ពតែមួយ នៅលើទ្រូងខាងស្ដាំរបស់អ្នកពាក់។ គែមខាងក្នុង ៥.៧ ពីស្នាម CF ហើយគែមលើ ១៥.២ ពី HPS ចុះក្រោម។',
+                   '៣. ខាងក្រោយ៖ បង្កើតស្នាមកណ្ដាលខ្នង (CB)។ គូសសញ្ញា ១៣.០ ពីគែមឆ្វេងផ្ទាំងបោះពុម្ព។ គែមលើនិមិត្តសញ្ញា ៨.០ ពីថ្នេរកអាវខាងក្រោយចុះក្រោម។',
+                   '៤. រក្សាផ្ទាំងបោះពុម្ពនីមួយៗឲ្យត្រង់ (កែងនឹងស្នាមកណ្ដាល)។ បិទដោយស្កុតធន់កម្ដៅ។',
+                   '៥. អ៊ុត ១៦០ °C រយៈពេល ១៥ វិនាទី សម្ពាធមធ្យម-ខ្លាំង។ ហែកហ្វីលតាមប្រភេទហ្វីល។ អ៊ុតបញ្ចប់ ១០ វិនាទី ដោយគ្របក្រដាសការពារ។ អ៊ុតខាងមុខមុន ហើយគ្របវាដោយក្រដាសការពារ ពេលអ៊ុតខាងក្រោយ។',
+                   'ខាងមុខ៖ ផ្ទាំងបោះពុម្ពតែមួយ (និមិត្តសញ្ញា និងចំណងជើងនៅខាងក្រោម) នៅលើទ្រូងខាងស្ដាំរបស់អ្នកពាក់។'],
+            foot='All Right Reserved By ទីចាត់ការបុគ្គលិក, អគ្គបញ្ជាការ ២០២៦'))
+T = TXT[LANG]
+
+KM = str.maketrans('0123456789', '០១២៣៤៥៦៧៨៩')
+def N(v, plain=False):
+    s = f'{v:.1f}' if isinstance(v, float) else str(v)
+    return s.translate(KM) if LANG == 'kh' else s
+
+KHRUN = re.compile(r'([ក-៿​]+(?:[ ·×()/.,:\-0-9A-Za-z°]*[ក-៿​]+)*)')
+_fc = {}
+def font(kind, size, khmer=False):
+    k = (kind, size, khmer)
+    if k not in _fc:
+        if khmer:
+            _fc[k] = ImageFont.truetype(os.path.join(FONTS, 'NSK-700.ttf' if kind == 'Bold' else 'NSK-400.ttf'), size)
+        else:
+            _fc[k] = ImageFont.truetype(DJV % ('-Bold' if kind == 'Bold' else ''), size)
+    return _fc[k]
+
+def runs(s):
+    out = []
+    for part in KHRUN.split(s):
+        if part:
+            out.append((part, bool(re.search(r'[ក-៿]', part))))
+    return out
+
+def tw(s, kind, size):
+    return sum(font(kind, size, k).getlength(t) for t, k in runs(s))
+
+def text(d, xy, s, kind, size, fill, anchor='l'):
+    x, y = xy
+    w = tw(s, kind, size)
+    if anchor == 'm':
+        x -= w / 2
+    elif anchor == 'r':
+        x -= w
+    for t, k in runs(s):
+        f = font(kind, size, k)
+        d.text((x, y), t, font=f, fill=fill, anchor='ls')
+        x += f.getlength(t)
+    return w
+
+def dashed(d, a, b, fill, w=1, dash=7):
+    (x0, y0), (x1, y1) = a, b
+    L = max(abs(x1 - x0), abs(y1 - y0)); n = int(L // dash)
+    for i in range(0, n, 2):
+        t0, t1 = i / n, min((i + 1) / n, 1)
+        d.line([(x0 + (x1 - x0) * t0, y0 + (y1 - y0) * t0), (x0 + (x1 - x0) * t1, y0 + (y1 - y0) * t1)], fill=fill, width=w)
+
+def arrow_v(d, x, y0, y1, label, fill, side='r'):
+    d.line([(x, y0), (x, y1)], fill=fill, width=2)
+    for y, s in ((y0, 1), (y1, -1)):
+        d.polygon([(x, y), (x - 4, y + 8 * s), (x + 4, y + 8 * s)], fill=fill)
+        d.line([(x - 6, y), (x + 6, y)], fill=fill, width=2)
+    ym = (y0 + y1) / 2 + 5
+    if side == 'r':
+        text(d, (x + 10, ym), label, 'Bold', 15, fill)
+    else:
+        text(d, (x - 10, ym), label, 'Bold', 15, fill, 'r')
+
+def arrow_h(d, y, x0, x1, label, fill, above=True):
+    d.line([(x0, y), (x1, y)], fill=fill, width=2)
+    for x, s in ((x0, 1), (x1, -1)):
+        d.polygon([(x, y), (x + 8 * s, y - 4), (x + 8 * s, y + 4)], fill=fill)
+        d.line([(x, y - 6), (x, y + 6)], fill=fill, width=2)
+    text(d, ((x0 + x1) / 2, y - 9 if above else y + 22), label, 'Bold', 15, fill, 'm')
+
+WHITE, YEL, INK, ACC = (255, 255, 255), (255, 190, 40), (28, 28, 28), (255, 150, 60)
+
+# ---------- back panel ----------
+img = Image.open(os.path.join(HERE, 'back_mockup.webp')).convert('RGB')
+line2 = img.crop((510, 858, 880, 928))                           # keep title line 2 (ទីចាត់ការបុគ្គលិក)
+import numpy as np
+_a = np.asarray(img).astype(float)
+_L = _a[800:965, 452:468].mean(1)                                # fabric colour per row, left of the artwork
+_R = _a[800:965, 922:938].mean(1)                               # ... and right of it
+_noise = (_a[800:965, 405:505] - _a[800:965, 405:505].mean(1, keepdims=True)).std()
+_rng = np.random.default_rng(7)
+_T = _a[794:801, 470:920].mean(0)                               # fabric just above the erased block
+_B = _a[966:973, 470:920].mean(0)                                # ... and just below it
+_wx = np.linspace(0, 1, 450)[None, :, None]; _wy = np.linspace(0, 1, 165)[:, None, None]
+_fill = ((1 - _wx) * _L[:, None, :] + _wx * _R[:, None, :] + (1 - _wy) * _T[None, :, :] + _wy * _B[None, :, :]
+         - ((1 - _wx) * (1 - _wy) * _T[0] + _wx * (1 - _wy) * _T[-1] + (1 - _wx) * _wy * _B[0] + _wx * _wy * _B[-1])
+         + _rng.normal(0, _noise, (165, 450, 3)))
+img.paste(Image.fromarray(np.clip(_fill, 0, 255).astype('uint8')), (470, 800))   # erase old title block + baked-in size label
+img.paste(line2, (510, 806))                                     # line 2 moves up; gap to emblem stays 1.7
+img.save(os.path.join(HERE, 'back_mockup_edited.png'))           # clean edited photo for the A3 PDF
+d = ImageDraw.Draw(img)
+dashed(d, (CB_X, 380), (CB_X, 975), WHITE)
+text(d, (CB_X + 8, 376), T['cb'], 'Bold', 14, WHITE)
+d.line([(CB_X - 90, SEAM_Y), (CB_X + 90, SEAM_Y)], fill=WHITE, width=2)
+text(d, (CB_X - 96, SEAM_Y + 5), T['seam'], 'Bold', 13, WHITE, 'r')
+for b in (EMB, TIT):
+    p = [(b['x0'] - 3, b['y0'] - 3), (b['x1'] + 3, b['y0'] - 3), (b['x1'] + 3, b['y1'] + 3), (b['x0'] - 3, b['y1'] + 3)]
+    for i in range(4):
+        dashed(d, p[i], p[(i + 1) % 4], YEL)
+ax = TIT['x1'] + 34
+arrow_v(d, ax, SEAM_Y, EMB['y0'], N(TOP_CM), WHITE)
+arrow_v(d, ax, EMB['y0'], EMB['y1'], N(EMB_H), YEL)
+arrow_v(d, ax, EMB['y1'], TIT['y0'], N(GAP), ACC)
+arrow_v(d, ax, TIT['y0'], TIT['y1'], N(TIT_H), YEL)
+arrow_h(d, EMB['y0'] - 16, EMB['x0'], EMB['x1'], N(EMB_W), YEL)
+arrow_h(d, TIT['y1'] + 26, TIT['x0'], TIT['x1'], N(TIT_W), YEL, above=False)
+text(d, (CB_X, TIT['y1'] + 70), T['overall'].format(w=N(TOT_W), h=N(TOT_H)), 'Bold', 17, WHITE, 'm')
+panel = img.crop((0, 250, img.width, 1560))
+BG = img.getpixel((5, 5))
+
+# ---------- sheet ----------
+W = 1390; S = 1
+head_h = 120
+rows_n = len(T['rows']) + 1
+tab_h = 40 + 52 + 40 + len(T['rows']) * 46 + 30
+notes_h = 70 + 44 * len(T['notes']) + 50
+H = head_h + panel.height + max(tab_h, notes_h) + 70
+sheet = Image.new('RGB', (W, H), BG); sd = ImageDraw.Draw(sheet)
+text(sd, (46, 62), T['title'], 'Bold', 44, INK)
+text(sd, (46, 100), T['sub'], 'Regular', 20, (80, 80, 80))
+sheet.paste(panel, (0, head_h))
+y = head_h + panel.height + 40
+
+# table: front values (v1 sheet; title line 1 removed: height 3.6 -> 2.1 from the one-line title's aspect ratio (26.0 x 4.4),
+# title kept vertically centred so its top moves 18.0 -> 18.8) vs back values
+# front = the uploaded stacked design (new_design_source.webp) at 10.0 cm wide, unmodified:
+# emblem 8.5 x 7.5, gap 0.4, title 10.0 x 1.8 -> overall 10.0 x 9.8; inner edge 5.7 from CF, top 15.2 below HPS
+FR = [f"{N(10.0)} × {N(9.8)}", f"{N(8.5)} × {N(7.5)}", f"{N(10.0)} × {N(1.8)}", f"{N(0.4)} ({T['stacked']})",
+      f"CF→ {N(5.7)}", 'HPS ↓ ' + N(15.2), 'HPS ↓ ' + N(23.1), '—']
+BK = [f"{N(TOT_W)} × {N(TOT_H)}", f"{N(EMB_W)} × {N(EMB_H)}", f"{N(TIT_W)} × {N(TIT_H)}", f"{N(GAP)} ({T['stacked']})",
+      T['centred'], ('seam ↓ ' if LANG == 'en' else 'ថ្នេរ ↓ ') + N(TOP_CM),
+      ('seam ↓ ' if LANG == 'en' else 'ថ្នេរ ↓ ') + N(TOP_CM + EMB_H + GAP), N(TOT_W / 2)]
+text(sd, (46, y + 20), T['tab'], 'Bold', 24, INK)
+y += 52
+cx = [46, 390, 548]
+sd.rectangle([30, y, 710, y + 40], fill=(214, 214, 210))
+for x, c in zip(cx, T['cols']):
+    text(sd, (x, y + 28), c, 'Bold', 17, INK)
+y += 40
+for i, (r, f, b) in enumerate(zip(T['rows'], FR, BK)):
+    if i % 2:
+        sd.rectangle([30, y, 710, y + 46], fill=(224, 224, 220))
+    text(sd, (cx[0], y + 30), r, 'Bold', 16, INK)
+    text(sd, (cx[1], y + 30), f, 'Regular', 17, (50, 50, 50))
+    text(sd, (cx[2], y + 30), b, 'Regular', 17, (50, 50, 50))
+    y += 46
+
+ny = head_h + panel.height + 60
+text(sd, (750, ny), T['hdr'], 'Bold', 24, INK)
+ny += 14
+for n in T['notes']:
+    ny += 34
+    # simple wrap
+    words, line = n.split(' '), ''
+    for w_ in words:
+        if tw(line + ' ' + w_, 'Regular', 15) > 590 and line:
+            text(sd, (750, ny), line, 'Regular', 15, (60, 60, 60)); ny += 24; line = w_
+        else:
+            line = (line + ' ' + w_).strip()
+    text(sd, (750, ny), line, 'Regular', 15, (60, 60, 60))
+ny += 40
+text(sd, (750, ny), T['leg'], 'Regular', 13, (110, 110, 110))
+
+sd.rectangle([0, H - 70, W, H], fill=(28, 32, 26))
+text(sd, (W / 2, H - 28), T['foot'], 'Regular', 17, (214, 200, 150), 'm')
+out = os.path.join(HERE, f'placement_back_{LANG}.png')
+sheet.save(out)
+print(out, sheet.size)
+
+import json
+json.dump(dict(T=T, FR=FR, BK=BK, G=dict(CB_X=CB_X, SEAM_Y=SEAM_Y, EMB=EMB, TIT=TIT, TOP_CM=TOP_CM, EMB_W=EMB_W, TIT_W=TIT_W, TOT_W=TOT_W, TOT_H=TOT_H, EMB_H=EMB_H, GAP=GAP, TIT_H=TIT_H)), open(os.path.join(HERE, f'data_{LANG}.json'), 'w'), ensure_ascii=False)
